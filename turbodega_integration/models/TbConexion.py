@@ -9,9 +9,9 @@ _logger = logging.getLogger(__name__)
 class TBClient(object):
     def __init__(self, timeout=30):
 
-        self._product_url = "https://turbodega.com/api/dc/products"
-        self._partner_url = "https://turbodega.com/api/dc/stores"
-        self._resourceId = "https://turbodega.com/api/dc"
+        self._product_url = "https://dashboard.turbodega.com/api/dc/products"
+        self._partner_url = "https://dashboard.turbodega.com/api/dc/stores"
+        self._resourceId = "https://dashboard.turbodega.com/api/dc"
         self._method = "POST"
         self._timeout = timeout
 

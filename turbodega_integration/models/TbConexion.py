@@ -11,7 +11,7 @@ class TBClient(object):
 
         self._product_url = "https://dashboard.turbodega.com/api/dc/products"
         self._partner_url = "https://dashboard.turbodega.com/api/dc/stores"
-        self._resourceId = "https://dashboard.turbodega.com/api/dc"
+        self._resourceId  = "https://dashboard.turbodega.com/api/dc"
         self._method = "POST"
         self._timeout = timeout
 

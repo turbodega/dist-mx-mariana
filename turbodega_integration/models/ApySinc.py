@@ -85,7 +85,6 @@ class SyncApi(models.Model):
             )
 
     def scheduler_1minute(self, model=None):
-        _logger.error("1")
         _logger.error(model)
         list_productos = self.env[model].search(
             [
@@ -93,11 +92,9 @@ class SyncApi(models.Model):
                 ("turbodega_type_entity", "=", "turbodega"),
             ]
         )
-        _logger.error("2")
         for data in list_productos:
             _logger.warning("2.1")
             self.env["sync.api"].sync_api(id_product=data.id, model=model)
-        _logger.error("3")
         list_productos = self.env[model].search(
             [
                 ("turbodega_creation", "=", True),
@@ -105,9 +102,7 @@ class SyncApi(models.Model):
                 ("turbodega_type_entity", "=", "turbodega"),
             ]
         )
-        _logger.error("4")
         for data in list_productos:
-            _logger.error("4.1")
             self.env["sync.api"].sync_update(id_product=data.id, model=model)
 
     def sync_turbodega(self, id_turbo=None, model=None):

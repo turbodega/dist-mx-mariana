@@ -58,6 +58,9 @@ class ProductTemplate(models.Model):
         tax = False
         if producto_1.taxes_id:
             tax = producto_1.taxes_id[0].id
+        manufacturer = False
+        if producto_1.seller_ids:
+            manufacturer = producto_1.seller_ids[0].name.name
         stock_level = producto_1.virtual_available
         tb_data = {
             "resourceId": self.company_id.resourceId,
@@ -68,7 +71,7 @@ class ProductTemplate(models.Model):
             "name": producto_1.name,
             "displayName": producto_1.name or "",
             "description": producto_1.description or "",
-            "manufacturer": producto_1.manufacturer.name or "",
+            "manufacturer": manufacturer or "",
             "brand": producto_1.product_brand_id.name or "",
             # "stockLevel": producto_1.qty_available,
             "stockLevel": stock_level,

@@ -19,7 +19,7 @@
         "contacts",
         "stock",
         "account",
-        "product_manufacturer",
+        "purchase",
         "product_brand",
         "base_address_extended",
         "l10n_latam_base",

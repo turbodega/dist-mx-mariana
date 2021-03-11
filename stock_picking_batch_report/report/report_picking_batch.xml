@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <template id="stock_picking_batch_report.report_picking_batch_turboserver">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t
+                        t-set="move_line_ids"
+                        t-value="o.picking_ids.mapped('move_line_ids')"
+                    />
+                    <t
+                        t-set="has_barcode"
+                        t-value="move_line_ids.mapped('product_id').filtered('barcode')"
+                    />
+                    <t
+                        t-set="locations"
+                        t-value="move_line_ids.mapped('location_id').sorted(lambda location: location.complete_name)"
+                    />
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <t t-foreach="locations" t-as="location">
+                                <t
+                                    t-set="loc_move_line"
+                                    t-value="move_line_ids.filtered(lambda x: x.location_id==location)"
+                                />
+                                <t
+                                    t-set="products"
+                                    t-value="loc_move_line.mapped('product_id').sorted(lambda product: product.name, reverse=False)"
+                                />
+                                <h3><span t-field="o.name" /></h3>
+                                <div t-if="o.user_id">
+                                    <strong>Responsible:</strong>
+                                    <span t-field="o.user_id" />
+                                </div><br />
+                                <h4><strong>To take from: <span
+                                            t-field="location.display_name"
+                                        /></strong></h4>
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th width="27%">To</th>
+                                            <th width="23%">Transfer</th>
+                                            <th
+                                                t-if="has_barcode"
+                                                width="15%"
+                                                class="text-center"
+                                            >
+                                                <strong>Product Barcode</strong>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="products" t-as="product">
+                                            <t
+                                                t-set="product_move_line"
+                                                t-value="move_line_ids.filtered(lambda x: (x.location_id==location and x.product_id==product))"
+                                            />
+                                            <td>
+                                                <span t-field="product.display_name" />
+                                            </td>
+                                            <td>
+                                                <span
+                                                    t-esc="sum(product_move_line.mapped('qty_done'))"
+                                                />
+
+                                            </td>
+                                            <td>
+                                                <span
+                                                    t-esc="product_move_line.mapped('location_dest_id').display_name"
+                                                />
+                                            </td>
+                                            <td>
+                                                <span
+                                                    t-esc="', '.join(product_move_line.mapped('reference'))"
+                                                />
+                                            </td>
+                                            <td
+                                                width="15%"
+                                                class="text-center"
+                                                t-if="has_barcode"
+                                            >
+                                                <span t-if="product.barcode">
+                                                    <img
+                                                        t-if="len(product.barcode) == 13"
+                                                        t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN13', product.barcode, 600, 100)"
+                                                        style="width:100%;height:35px"
+                                                        alt="Barcode"
+                                                    />
+                                                    <img
+                                                        t-elif="len(product.barcode) == 8"
+                                                        t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('EAN8', product.barcode, 600, 100)"
+                                                        style="width:100%;height:35px"
+                                                        alt="Barcode"
+                                                    />
+                                                    <img
+                                                        t-else=""
+                                                        t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', product.barcode, 600, 100)"
+                                                        style="width:100%;height:35px"
+                                                        alt="Barcode"
+                                                    />
+
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="page-break-after: always;" />
+                            </t>
+                         </div>
+                     </t>
+                 </t>
+            </t>
+        </template>
+    </data>
+</odoo>

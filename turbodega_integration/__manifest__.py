@@ -39,3 +39,7 @@
     ],
     "installable": True,
 }
+
+
+# agregar a combo a turbodega
+# agregar el reporte order. detallado de odoo13 a odoo14

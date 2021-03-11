@@ -15,9 +15,11 @@ class SyncApi(models.Model):
     def sync_api(self, id_product=None, model=None):
         error_data = ""
         model_1 = self.env[model].browse(id_product)
-        _logger.error(model_1)
+        res_company_1 = self.env["res.company"].browse(1)
+        model_1.company_id = res_company_1
+        if not model_1.company_id:
+            raise UserError(_("Company no selected."))
         if model_1.turbodega_type_entity == "turbodega":
-            _logger.warning(model_1)
             tb_data = model_1.to_json_turbodega()
             log_data = {
                 "name": "sync",
@@ -29,17 +31,23 @@ class SyncApi(models.Model):
             event_obj = self.env["logs.request"].sudo().create(log_data)
             return_value, json_message, url_endpoint = model_1.api_send(tb_data)
             error_data = ""
-            if return_value:
-                model_1.turbodega_sync = True
-                model_1.turbodega_creation = True
-                model_1.turbodega_sync_date = datetime.now()
-                transaccion_status = "done"
+            transaccion_status = "error"
+            try:
                 json_message = json.loads(json_message)
-                if model == "res.partner":
-                    model_1.ref = json_message.get("id", False)
-            else:
-                transaccion_status = "error"
-                error_data = json_message["faultcode"]
+                if return_value:
+                    model_1.turbodega_sync = True
+                    model_1.turbodega_creation = True
+                    model_1.turbodega_sync_date = datetime.now()
+                    transaccion_status = "done"
+                    if model == "res.partner":
+                        model_1.ref = json_message.get("id", False)
+                else:
+                    transaccion_status = "error"
+                    error_data = json_message.get("message", False)
+            except Exception as e:
+                _logger.error(e)
+                error_data = e
+                json_message = {"error": "error en el json de respuesta"}
             event_obj.update(
                 {
                     "json_out": json.dumps(json_message, indent=4, sort_keys=True),
@@ -71,10 +79,9 @@ class SyncApi(models.Model):
                 model_1.turbodega_sync = True
                 model_1.turbodega_sync_date = datetime.now()
                 transaccion_status = "done"
-
             else:
                 transaccion_status = "error"
-                error_data = json_message["faultcode"]
+                error_data = json_message.get("message", False)
             event_obj.update(
                 {
                     "json_out": json.dumps(json_message, indent=4, sort_keys=True),
@@ -84,8 +91,12 @@ class SyncApi(models.Model):
                 }
             )
 
+    def sync_update_related(self, id_product=None, model=None):
+        model_1 = self.env[model].browse(id_product)
+        if model_1.turbodega_type_entity == "turbodega" and model_1.turbodega_creation:
+            model_1.update_related()
+
     def scheduler_1minute(self, model=None):
-        _logger.error(model)
         list_productos = self.env[model].search(
             [
                 ("turbodega_creation", "=", False),
@@ -93,7 +104,6 @@ class SyncApi(models.Model):
             ]
         )
         for data in list_productos:
-            _logger.warning("2.1")
             self.env["sync.api"].sync_api(id_product=data.id, model=model)
         list_productos = self.env[model].search(
             [
@@ -110,11 +120,11 @@ class SyncApi(models.Model):
         if not record.turbodega_creation:
             self.env["sync.api"].sync_api(id_product=record.id, model=model)
         else:
+            self.env["sync.api"].sync_update_related(id_product=record.id, model=model)
             self.env["sync.api"].sync_update(id_product=record.id, model=model)
 
     def sync_stockpicking(self, id_turbo=None):
         record = self.env["stock.picking"].browse(id_turbo)
-        _logger.error(record.name)
         for data in record.move_ids_without_package:
             if not data.product_id.product_tmpl_id.company_id:
                 msg = (
@@ -133,5 +143,11 @@ class SyncApi(models.Model):
                 raise UserError(_(msg))
 
         for data in record.move_ids_without_package:
-            _logger.warning("***" + data.name)
             self.sync_turbodega(data.product_id.product_tmpl_id.id, "product.template")
+
+    def sync_mrp_bom(self, id_turbo=None):
+        record = self.env["mrp.bom"].browse(id_turbo)
+        if not record.product_tmpl_id.company_id:
+            msg = "producto:" + record.product_tmpl_id.name + "\nSin compañía"
+            raise UserError(_(msg))
+        self.sync_turbodega(record.product_tmpl_id.id, "product.template")

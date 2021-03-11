@@ -1,2 +1,2 @@
 # dist-mx-mariana
-changed test 2
+changed text 2

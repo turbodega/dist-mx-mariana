@@ -25,6 +25,7 @@ class ResCompany(models.Model):
     )
     resourceId = fields.Char(string="ResourceId", readonly="True")
     token = fields.Char(string="Token")
+    default_location = fields.Many2one("stock.location")
     turbodega_sync = fields.Boolean(string="Sync", default=False)
     turbodega_sync_date = fields.Datetime("datetime")
 

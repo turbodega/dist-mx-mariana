@@ -32,7 +32,7 @@ env['sync.api'].sync_turbodega(record.id, 'product.template')
             <field name="active" eval="True" />
         </record>
 
-<record id="turbodega_stock_picking" forcecreate='True' model="base.automation">
+        <record id="turbodega_stock_picking" forcecreate='True' model="base.automation">
             <field name="name">Turbodega stock picking</field>
             <field name="model_id" ref="stock.model_stock_picking" />
             <field name="state">code</field>

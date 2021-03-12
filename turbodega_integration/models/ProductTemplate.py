@@ -44,15 +44,21 @@ class ProductTemplate(models.Model):
         producto_product_1 = self.env["product.product"].search(
             [("product_tmpl_id", "=", self.id)]
         )
+        _logger.error(producto_product_1)
         for product_product in producto_product_1:
             mrp_bom_line_1 = self.env["mrp.bom.line"].search(
                 [("product_id", "=", product_product.id)]
             )
+            _logger.error(mrp_bom_line_1)
             for mrp_bom_line in mrp_bom_line_1:
                 mrp_bom_1 = self.env["mrp.bom"].browse(mrp_bom_line.bom_id.id)
-                self.env["sync.api"].sync_turbodega(
-                    mrp_bom_1.product_tmpl_id.id, "product.template"
+                _logger.error(mrp_bom_1)
+                self.env["sync.api"].sync_update(
+                    id_product=mrp_bom_1.product_tmpl_id.id, model="product.template"
                 )
+                # self.env["sync.api"].sync_turbodega(
+                #     mrp_bom_1.product_tmpl_id.id, "product.template"
+                # )
 
     def to_json_turbodega(self):
         stock_level = 0
@@ -86,7 +92,10 @@ class ProductTemplate(models.Model):
             [("company_id", "=", producto_1.company_id.id)]
         )
         for warehouse in stock_warehouse_1:
-            stock_level += producto_1.with_context(
+            # producto_product_1.with_context(
+            #     warehouse=warehouse.id
+            # )._compute_quantities()
+            stock_level += producto_product_1.with_context(
                 warehouse=warehouse.id
             ).virtual_available
         tb_data = {

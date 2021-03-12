@@ -1,6 +1,7 @@
 # import tb_conexion
 import json
 import logging
+import time
 from datetime import datetime
 
 from odoo import _, models
@@ -30,6 +31,7 @@ class SyncApi(models.Model):
             }
             event_obj = self.env["logs.request"].sudo().create(log_data)
             return_value, json_message, url_endpoint = model_1.api_send(tb_data)
+
             error_data = ""
             transaccion_status = "error"
             try:
@@ -54,6 +56,7 @@ class SyncApi(models.Model):
                     "error_details": error_data,
                     "stages_id": transaccion_status,
                     "endpoint": url_endpoint,
+                    "fechaActualizacion": datetime.now(),
                 }
             )
 
@@ -73,6 +76,7 @@ class SyncApi(models.Model):
             return_value, json_message, url_endpoint = model_1.api_update_product(
                 tb_data
             )
+            time.sleep(0.02)
             json_message = json.loads(json_message)
             error_data = ""
             if return_value:
@@ -88,6 +92,7 @@ class SyncApi(models.Model):
                     "error_details": error_data,
                     "stages_id": transaccion_status,
                     "endpoint": url_endpoint,
+                    "fechaActualizacion": datetime.now(),
                 }
             )
 
@@ -120,11 +125,13 @@ class SyncApi(models.Model):
         if not record.turbodega_creation:
             self.env["sync.api"].sync_api(id_product=record.id, model=model)
         else:
-            self.env["sync.api"].sync_update_related(id_product=record.id, model=model)
             self.env["sync.api"].sync_update(id_product=record.id, model=model)
+            # self.env["sync.api"].
+            # sync_update_related(id_product=record.id, model=model)
 
     def sync_stockpicking(self, id_turbo=None):
         record = self.env["stock.picking"].browse(id_turbo)
+        _logger.error(record.state)
         for data in record.move_ids_without_package:
             if not data.product_id.product_tmpl_id.company_id:
                 msg = (
@@ -144,6 +151,9 @@ class SyncApi(models.Model):
 
         for data in record.move_ids_without_package:
             self.sync_turbodega(data.product_id.product_tmpl_id.id, "product.template")
+        # for data in record.move_ids_without_package:
+        #     self.sync_update_related(
+        # id_product=data.product_id.product_tmpl_id.id, model="product.template")
 
     def sync_mrp_bom(self, id_turbo=None):
         record = self.env["mrp.bom"].browse(id_turbo)

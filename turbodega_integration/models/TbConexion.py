@@ -53,6 +53,7 @@ class TBClient(object):
                 _logger.info("----------PUT")
                 _logger.info(url)
                 _logger.info(headers)
+                _logger.info(headers)
                 _logger.info(json_data)
                 r = requests.put(
                     url,

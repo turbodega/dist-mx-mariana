@@ -31,7 +31,7 @@ class ResPartner(models.Model):
         partner_1 = self.env["res.partner"].browse(self.id)
         tb_geocoord = [partner_1.partner_latitude, partner_1.partner_longitude]
         tb_address = {
-            "street1": partner_1.street,
+            "street1": partner_1.street_name,
             "town": partner_1.state_id.name or "",
             "postalCode": partner_1.zip or "",
             "adminDivision": False,
